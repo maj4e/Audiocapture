@@ -12,3 +12,11 @@ enum timestamp {
     case start
     case end
 }
+
+
+struct Upload {
+    var container = ""
+    var filename = ""
+    var rooturi = ""
+    var sastoken = ""
+}

@@ -140,6 +140,9 @@
                                 <state key="normal" title="UPLOAD">
                                     <color key="titleColor" red="0.69737467480000004" green="1" blue="0.2167358872" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
+                                <connections>
+                                    <action selector="buttonUpload:" destination="BYZ-38-t0r" eventType="touchUpInside" id="8Hm-JN-qvT"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TFz-Sr-NVi">
                                 <rect key="frame" x="16" y="370" width="169" height="38"/>

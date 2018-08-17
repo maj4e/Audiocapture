@@ -16,6 +16,7 @@ class ViewController: UIViewController, SetProperties {
     
     var fileUrl: URL!
     
+    // Audio record and play stuff
     var audioSession = AVAudioSession.sharedInstance()
     var audioEngine = AVAudioEngine()
     var audioPlayer: AVAudioPlayer!
@@ -26,10 +27,33 @@ class ViewController: UIViewController, SetProperties {
     var supportedPolarPatterns: [String] = []
     var selectedMicrophone: String =  ""
 
-    // A file manager
+    // A file manager for deleting/renaming files
     let fileManager = FileManager.default
     
+    // The global record object used to perform recording
     var newRecord = Recording()
+    
+    
+    // login info and response from the first POST call
+    let url = spotturl
+    let authtoken = testtoken
+    var uploadData = Upload()
+    
+    
+
+    // Metadata to be uploaded
+    var dictionary = ["distance": "",
+                      "endTimestamp": "",
+                      "filePath": "",
+                      "metaData":"",
+                      "microphoneLocation": "",
+                      "microphoneType": "",
+                      "onTable": false,
+                      "roomType": "",
+                      "startTimestamp": ""] as [String : Any]
+    
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,7 +73,7 @@ class ViewController: UIViewController, SetProperties {
         
         obuttonListen.isUserInteractionEnabled = false
         obuttonEdit.isUserInteractionEnabled = false
-        obuttonUpload.isUserInteractionEnabled = false
+        obuttonUpload.isUserInteractionEnabled = true
         obuttonDelete.isUserInteractionEnabled = false
        
         
@@ -323,6 +347,62 @@ class ViewController: UIViewController, SetProperties {
         }
     }
     
+    //* MARK: Networking
+    
+    func getUploadInfo() {
+        
+        var request = URLRequest(url: URL(string: url)!)
+        request.httpMethod = "POST"
+        request.setValue(authtoken, forHTTPHeaderField: "authtoken")
+        
+        // - Begin communication: get sastoken
+        /***************************************************************/
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard error == nil else {
+                print(error!)
+                return
+            }
+            guard let data = data else {
+                print("Data is empty")
+                return
+            }
+            
+            // Read the data from json into the uploadData variable
+            let json = try! JSONSerialization.jsonObject(with: data, options: [])
+            if let inputDict = json as? [String: Any]{
+                if let mainDict = inputDict["azure"] {
+                    if let myDict = mainDict as? [String: Any] {
+                        // this is the token to be used for the azure blob
+                        if let sastoken = myDict["sasToken"] {
+                            //self.sas = sastoken as! String
+                            self.uploadData.sastoken = sastoken as! String
+                        }
+                        if let container = myDict["container"]{
+                            //self.container = container as! String
+                            self.uploadData.container = container as! String
+                        }
+                        if let filename = myDict["filename"]{
+                            //self.fileext = filename as! String
+                            self.uploadData.filename = filename as! String
+                        }
+                        
+                        //self.myfile = "private/upload/\(self.filename)"
+                        //self.dictionary["filePath"] = self.myfile
+                        
+                        if let rootUri = myDict["rootUri"]{
+                            self.uploadData.rooturi = rootUri as! String
+                        }
+                    
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    
+    
+    
     
     
     //* MARK: Utility functions
@@ -493,6 +573,10 @@ class ViewController: UIViewController, SetProperties {
     }
     
     
+    
+    @IBAction func buttonUpload(_ sender: UIButton) {
+        getUploadInfo()
+    }
     
     
     @IBAction func buttonBottom(_ sender: UIButton) {
