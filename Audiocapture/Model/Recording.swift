@@ -84,8 +84,24 @@ class Recording {
         } else if forTimeAt == .end {
             self.endTimestamp = timestamp_string
         }
+    }
+    
+    //-------- Create a dictionary from the record objects (required for http requests)
+    func createDictionary() -> [String:Any] {
         
+        let dictionary = ["distance": Int(self.distance) as Any,
+                          "endTimestamp": self.endTimestamp,
+                          "filePath": self.filename,
+                          "metaData": self.metadata,
+                          "microphoneLocation": self.microphoneLocation,
+                          "microphoneType": self.microphoneType,
+                          "onTable": self.onTable,
+                          "roomType": self.roomType,
+                          "startTimestamp": self.endTimestamp] as [String : Any]
+        
+        return dictionary
         
     }
+    
     
 }

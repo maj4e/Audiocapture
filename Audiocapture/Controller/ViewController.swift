@@ -25,7 +25,7 @@ class ViewController: UIViewController, SetProperties {
 
     // Setting defaults for the audio session configuration
     var supportedPolarPatterns: [String] = []
-    var selectedMicrophone: String =  ""
+    var selectedMicrophone: String =  AVAudioSessionOrientationBottom
 
     // A file manager for deleting/renaming files
     let fileManager = FileManager.default
@@ -35,24 +35,10 @@ class ViewController: UIViewController, SetProperties {
     
     
     // login info and response from the first POST call
-    let url = spotturl
+    let url_getInfo = spotturl_getInfo
+    let url_uploadInfo = spotturl_uploadInfo
     let authtoken = testtoken
     var uploadData = Upload()
-    
-    
-
-    // Metadata to be uploaded
-    var dictionary = ["distance": "",
-                      "endTimestamp": "",
-                      "filePath": "",
-                      "metaData":"",
-                      "microphoneLocation": "",
-                      "microphoneType": "",
-                      "onTable": false,
-                      "roomType": "",
-                      "startTimestamp": ""] as [String : Any]
-    
-    
     
     
     override func viewDidLoad() {
@@ -60,7 +46,7 @@ class ViewController: UIViewController, SetProperties {
         
         // Initialize the audio session: bottom microphone (always omnidirectional)
         initAudioSession()
-        configAudioSessionMicrophoneSelection(preferredMic: AVAudioSessionOrientationBottom)
+        configAudioSessionMicrophoneSelection(preferredMic: selectedMicrophone)
         configAudioSessionMicrophonePolarPattern(preferredPolarPattern: AVAudioSessionPolarPatternOmnidirectional)
         
         audioEngine.stop()
@@ -185,6 +171,7 @@ class ViewController: UIViewController, SetProperties {
             $0.portType == AVAudioSessionPortBuiltInMic
         }) else { return }
         
+        
         // Find the data source at the specified orientation
         guard let dataSource = builtInMic.dataSources?.first (where: {
             $0.orientation == selectedMicrophone
@@ -208,7 +195,7 @@ class ViewController: UIViewController, SetProperties {
         
         newRecord.microphoneType = preferredPolarPattern
         updateUIwhenPolarPatternChanged(preferredPolarPattern: preferredPolarPattern)
-        
+    
     }
     
     
@@ -260,7 +247,7 @@ class ViewController: UIViewController, SetProperties {
         }
         
     }
-    
+
     
     //----
     func updateUIwhenPolarPatternChanged(preferredPolarPattern: String) {
@@ -349,15 +336,17 @@ class ViewController: UIViewController, SetProperties {
     
     //* MARK: Networking
     
-    func getUploadInfo() {
+    func getUploadInfo(stringurl: String) {
         
-        var request = URLRequest(url: URL(string: url)!)
+        var request = URLRequest(url: URL(string: stringurl)!)
         request.httpMethod = "POST"
         request.setValue(authtoken, forHTTPHeaderField: "authtoken")
         
-        // - Begin communication: get sastoken
-        /***************************************************************/
+        let semaphore = DispatchSemaphore(value: 0)
+        
+
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            
             guard error == nil else {
                 print(error!)
                 return
@@ -396,11 +385,57 @@ class ViewController: UIViewController, SetProperties {
                     }
                 }
             }
+            semaphore.signal()
         }
         task.resume()
+        semaphore.wait()
     }
     
     
+    
+    func uploadBlob(data: Upload) {
+        let rooturi = data.rooturi
+        let container = data.container
+        let sas = data.sastoken
+        let containerURL = rooturi + "/" + container+"?" + sas
+        var blobcontainer : AZSCloudBlobContainer
+        var error : NSError?
+        
+        blobcontainer = AZSCloudBlobContainer(url: URL(string: containerURL)! , error: &error)
+        
+        if ((error) != nil) {
+            print("Error in creating blob container object.  Error code = %ld, error domain = %@, error userinfo = %@", error!.code, error!.domain, error!.userInfo);
+        } else {
+                    //*MARK - this part is not working for the file upload
+//                  let blob = blobcontainer.blockBlobReference(fromName: "\(uploadData.filename)/\(newRecord.filename).caf")
+//                  let currentfileurl = getDirectory().appendingPathComponent("\(newRecord.filename).caf")
+//                  blob.uploadFromFile(with: currentfileurl, completionHandler: {(NSError) -> Void in
+//                  NSLog("Ok, uploaded !")
+//                  })
+//            
+                }
+    }
+    
+    
+    
+    func uploadMetadata(stringurl: String){
+        
+        var request = URLRequest(url: URL(string: stringurl)!)
+        request.httpMethod = "POST"
+        request.setValue(authtoken, forHTTPHeaderField: "authtoken")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let dictionary = newRecord.createDictionary()
+        print(dictionary)
+
+        //Put the fields of the current record in a dictionary
+        
+        // Make the request body by encoding the dictionary into JSON object
+        //guard let body = try? JSONSerialization.data(withJSONObject: dictionary) else { print("Could not encode dictionary"); return }
+        //request.httpBody = body
+        
+        
+    }
     
     
     
@@ -507,7 +542,6 @@ class ViewController: UIViewController, SetProperties {
             // Stop the recording
             newRecord.stop(audioEngine: audioEngine)
             
-            
             // Update flags and UI
             flag_isRecording = false
             obuttonStartStop.setTitle("Record", for: .normal)
@@ -517,13 +551,6 @@ class ViewController: UIViewController, SetProperties {
             obuttonUpload.isUserInteractionEnabled = true
             obuttonDelete.isUserInteractionEnabled = true
           
-            
-            print("\nRecording started at \(newRecord.startTimestamp)")
-            print("Recording ended at \(newRecord.endTimestamp)")
-            print("Microphone location: \(newRecord.microphoneLocation)")
-            print("Microphone type: \(newRecord.microphoneType)")
-            print("On table: \(newRecord.onTable)")
-            print("Distance from TV: \(newRecord.distance)")
         }
     }
     
@@ -573,9 +600,10 @@ class ViewController: UIViewController, SetProperties {
     }
     
     
-    
     @IBAction func buttonUpload(_ sender: UIButton) {
-        getUploadInfo()
+        getUploadInfo(stringurl: url_getInfo)
+        uploadBlob(data: uploadData)
+        uploadMetadata(stringurl: url_uploadInfo)
     }
     
     

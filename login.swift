@@ -8,6 +8,9 @@
 
 import Foundation
 
-let spotturl  =  "https://cms-api-tst.spott.tv/rest/v004/system/files/uploads"
+let spotturl_getInfo  =   "https://cms-api-tst.spott.tv/rest/v004/system/files/uploads"
+let spotturl_uploadInfo = "https://cms-api-tst.spott.tv/rest/v004/kuleuven/audioRecording"
+
+
 let testtoken = "ec0a42a4-2f83-4e1e-913f-a8b3327705d8"
 
