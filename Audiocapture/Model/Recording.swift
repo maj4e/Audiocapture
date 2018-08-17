@@ -24,7 +24,7 @@ class Recording {
     var distance: String = ""
     var filename = "untitled"
     var onTable: Bool = false // if required we will make it programmatic
-    var metadata = [String:String]()
+    var metadata = ""
     var roomType = ""
     
     //-------- Constructor: default
@@ -75,10 +75,11 @@ class Recording {
     func setTimestamp(forTimeAt: timestamp){
         
         let now = Date()
-        let df = DateFormatter()
-        df.dateFormat = "H:m:ss.SSSS"
-        let timestamp_string = df.string(from:now)
-        
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone.current
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        let timestamp_string  = formatter.string(from: now)
+
         if forTimeAt == .start {
             self.startTimestamp = timestamp_string
         } else if forTimeAt == .end {
@@ -89,12 +90,12 @@ class Recording {
     //-------- Create a dictionary from the record objects (required for http requests)
     func createDictionary() -> [String:Any] {
         
-        let dictionary = ["distance": Int(self.distance) as Any,
+        let dictionary = ["distance": Int(self.distance)!,
                           "endTimestamp": self.endTimestamp,
-                          "filePath": self.filename,
+                          "filePath": "\(self.filename).caf",
                           "metaData": self.metadata,
-                          "microphoneLocation": self.microphoneLocation,
-                          "microphoneType": self.microphoneType,
+                          "microphoneLocation": "\(self.microphoneLocation)",
+                          "microphoneType": "\(self.microphoneType)",
                           "onTable": self.onTable,
                           "roomType": self.roomType,
                           "startTimestamp": self.endTimestamp] as [String : Any]

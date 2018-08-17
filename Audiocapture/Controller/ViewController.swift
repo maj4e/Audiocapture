@@ -15,7 +15,7 @@ class ViewController: UIViewController, SetProperties {
     var flag_setupReady = false
     
     var fileUrl: URL!
-    
+
     // Audio record and play stuff
     var audioSession = AVAudioSession.sharedInstance()
     var audioEngine = AVAudioEngine()
@@ -61,8 +61,6 @@ class ViewController: UIViewController, SetProperties {
         obuttonEdit.isUserInteractionEnabled = false
         obuttonUpload.isUserInteractionEnabled = true
         obuttonDelete.isUserInteractionEnabled = false
-       
-        
         
     }
 
@@ -392,7 +390,7 @@ class ViewController: UIViewController, SetProperties {
     }
     
     
-    
+    //*MARK - BLOB UPLOAD NOT WORKING
     func uploadBlob(data: Upload) {
         let rooturi = data.rooturi
         let container = data.container
@@ -406,7 +404,7 @@ class ViewController: UIViewController, SetProperties {
         if ((error) != nil) {
             print("Error in creating blob container object.  Error code = %ld, error domain = %@, error userinfo = %@", error!.code, error!.domain, error!.userInfo);
         } else {
-                    //*MARK - this part is not working for the file upload
+            
 //                  let blob = blobcontainer.blockBlobReference(fromName: "\(uploadData.filename)/\(newRecord.filename).caf")
 //                  let currentfileurl = getDirectory().appendingPathComponent("\(newRecord.filename).caf")
 //                  blob.uploadFromFile(with: currentfileurl, completionHandler: {(NSError) -> Void in
@@ -426,20 +424,33 @@ class ViewController: UIViewController, SetProperties {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let dictionary = newRecord.createDictionary()
-        print(dictionary)
-
-        //Put the fields of the current record in a dictionary
         
         // Make the request body by encoding the dictionary into JSON object
-        //guard let body = try? JSONSerialization.data(withJSONObject: dictionary) else { print("Could not encode dictionary"); return }
-        //request.httpBody = body
+        guard let body = try? JSONSerialization.data(withJSONObject: dictionary) else { print("Could not encode dictionary"); return }
+        request.httpBody = body
+
         
-        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard error == nil else {
+                print(error!)
+                return
+            }
+            guard let data = data else {
+                print("Data is empty")
+                return
+            }
+
+            let json = try! JSONSerialization.jsonObject(with: data, options: [])
+            if let inputDict = json as? [String: Any]{
+                print("HTTP RESPONSE:\n")
+                print(inputDict)
+                self.displayAlert(title: "Upload succesful", message: "The file \(self.newRecord.filename).caf and its metadata have been uploaded to the server")
+            }
+        }
+        task.resume()
     }
     
-    
-    
-    
+
     //* MARK: Utility functions
     //------------------------------
     
