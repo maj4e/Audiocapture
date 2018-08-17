@@ -9,7 +9,7 @@
 import UIKit
 
 protocol SetProperties {
-    func userChangedProperties (filename: String, distance: String, table:String)
+    func userChangedProperties (filename: String, distance: String)
 }
 
 class FileViewController: UIViewController {
@@ -26,6 +26,7 @@ class FileViewController: UIViewController {
     var labPolpat: String?
     var labStart: String?
     var labEnd: String?
+    var labOntable: String?
     
 
     override func viewDidLoad() {
@@ -33,11 +34,11 @@ class FileViewController: UIViewController {
 
         textFilename.text = filename
         textDistance.text = distance
-        textTable.text = onTable
         labelMicloc.text = labMicloc
         labelEndtime.text = labEnd
         labelStarttime.text = labStart
         labelPolarpattern.text = labPolpat
+        labelOntable.text = labOntable
         
     }
 
@@ -50,10 +51,10 @@ class FileViewController: UIViewController {
         
         let filename = textFilename.text!
         let distance = textDistance.text!
-        let table = textTable.text!
+        //let table = textTable.text!
         
         // If the delegate is set, call the methods that will set the variables in the main ViewController
-        delegate?.userChangedProperties(filename: filename, distance: distance, table: table)
+        delegate?.userChangedProperties(filename: filename, distance: distance)
         
         self.dismiss(animated: true, completion: nil)
     }
@@ -65,11 +66,10 @@ class FileViewController: UIViewController {
     
     @IBOutlet weak var textFilename: UITextField!
     @IBOutlet weak var textDistance: UITextField!
-    @IBOutlet weak var textTable: UITextField!
-    
     @IBOutlet weak var labelMicloc: UILabel!
     @IBOutlet weak var labelPolarpattern: UILabel!
     @IBOutlet weak var labelStarttime: UILabel!
     @IBOutlet weak var labelEndtime: UILabel!
+    @IBOutlet weak var labelOntable: UILabel!
     
 }

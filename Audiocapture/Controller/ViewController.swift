@@ -8,6 +8,7 @@
 
 import UIKit
 import AVFoundation
+import CoreMotion
 
 class ViewController: UIViewController, SetProperties {
     
@@ -15,6 +16,12 @@ class ViewController: UIViewController, SetProperties {
     var flag_setupReady = false
     
     var fileUrl: URL!
+    
+    // For the motion sensors
+    var motionManager = CMMotionManager()
+    var tcount = 0
+    var hcount = 0
+    
 
     // Audio record and play stuff
     var audioSession = AVAudioSession.sharedInstance()
@@ -276,16 +283,11 @@ class ViewController: UIViewController, SetProperties {
     //----------------------------------
     
     
-    func userChangedProperties(filename: String, distance: String, table: String) {
+    func userChangedProperties(filename: String, distance: String) {
         
         // Update the attributes of the current Record object
         newRecord.distance = distance
         newRecord.filename = filename
-        if table == "t" {
-            newRecord.onTable = true
-        } else {
-            newRecord.onTable = false
-        }
         
         // Update the label of the filename in the ViewController
         labelFilename.text = "file: \(filename).caf"
@@ -319,6 +321,8 @@ class ViewController: UIViewController, SetProperties {
             destinationVC.labPolpat = "\(newRecord.microphoneType)"
             destinationVC.labStart = ""
             destinationVC.labMicloc = "\(newRecord.microphoneLocation)"
+            destinationVC.labOntable = ""
+            print("here")
             
         } else if segue.identifier == "editMetadata" {
         
@@ -327,11 +331,13 @@ class ViewController: UIViewController, SetProperties {
         
             destinationVC.filename = newRecord.filename
             destinationVC.distance = newRecord.distance
+            
+            print(newRecord.onTable)
         
             if newRecord.onTable {
-                destinationVC.onTable = "t"
+                destinationVC.labOntable = "On table"
             } else {
-                destinationVC.onTable = "h"
+                destinationVC.labOntable = "In hand"
             }
             
             destinationVC.labStart = newRecord.startTimestamp
@@ -506,7 +512,6 @@ class ViewController: UIViewController, SetProperties {
         
         // Change the flag and enable the record button again
         flag_setupReady = true
-        print("here")
         
         obuttonStartStop.isEnabled = true
         obuttonStartStop.isHighlighted = false
@@ -548,11 +553,14 @@ class ViewController: UIViewController, SetProperties {
             // Start the recording
             newRecord.start(audioEngine: audioEngine, outputFile: outputFile)
             
+            // Start the motion recording
+            motionManager.startDeviceMotionUpdates()
+            measureDeviceMotion()
+            
             // Update flags and UI
             flag_isRecording = true
             obuttonStartStop.setTitleColor(UIColor.red, for: .normal)
-            obuttonStartStop.setTitle("Stop", for: .normal)
-            
+            obuttonStartStop.setTitle("STOP", for: .normal)
             
             
         } else {
@@ -563,17 +571,61 @@ class ViewController: UIViewController, SetProperties {
             // Stop the recording
             newRecord.stop(audioEngine: audioEngine)
             
+            // Stop the motion updates
+            motionManager.stopDeviceMotionUpdates()
+            
             // Update flags and UI
             flag_isRecording = false
-            obuttonStartStop.setTitle("Record", for: .normal)
+            obuttonStartStop.setTitle("RECORD", for: .normal)
             obuttonStartStop.setTitleColor(UIColor.white, for: .normal)
             obuttonListen.isUserInteractionEnabled = true
             obuttonEdit.isUserInteractionEnabled = true
             obuttonUpload.isUserInteractionEnabled = true
             obuttonDelete.isUserInteractionEnabled = true
+            
+            // Was the recording on the table or not
+            if self.tcount > self.hcount {
+                newRecord.onTable = true
+            } else {
+                newRecord.onTable = false
+            }
+            
+            // Reset the motion counters
+            self.tcount = 0
+            self.hcount = 0
           
         }
     }
+    
+    
+    //* MARK Getting the motion sensor data to determine whether phone is on table or in hand
+    func measureDeviceMotion() {
+        motionManager.deviceMotionUpdateInterval = 0.2
+        motionManager.startDeviceMotionUpdates(to: OperationQueue.current!, withHandler: {
+            (devMotionData:CMDeviceMotion?, error: Error?) in
+            if (error != nil) {
+                print("Error in device motion updates")
+            } else {
+                
+                let X = devMotionData?.gravity.x
+                let Y = devMotionData?.gravity.y
+                let Z = devMotionData?.gravity.z
+                
+                let tot = pow(X!, 2) + pow(Y!,2) + pow(Z!+1,2)
+                let difxy = abs(X!-Y!)
+                
+                if tot<0.01 && difxy<0.02 {
+                    self.tcount = self.tcount + 1
+                } else {
+                    self.hcount = self.hcount + 1
+                }
+            }
+        })
+        
+    }
+            
+    
+    
     
     
     
@@ -602,7 +654,7 @@ class ViewController: UIViewController, SetProperties {
         labelFilename.text = ""
         
         //Reset the record
-        var tmp = newRecord
+        let tmp = newRecord
         newRecord = Recording()
         newRecord.microphoneLocation = tmp.microphoneLocation
         newRecord.microphoneType = tmp.microphoneType

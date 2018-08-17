@@ -10,6 +10,7 @@ import UIKit
 import AVFoundation
 
 
+
 class Recording {
     
     // ------- Class attributes (defined according to the API from Spott)
