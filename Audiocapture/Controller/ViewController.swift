@@ -315,6 +315,11 @@ class ViewController: UIViewController, SetProperties {
             destinationVC.distance = ""
             destinationVC.onTable =  ""
             
+            destinationVC.labEnd = ""
+            destinationVC.labPolpat = "\(newRecord.microphoneType)"
+            destinationVC.labStart = ""
+            destinationVC.labMicloc = "\(newRecord.microphoneLocation)"
+            
         } else if segue.identifier == "editMetadata" {
         
             let destinationVC = segue.destination as! FileViewController
@@ -328,6 +333,11 @@ class ViewController: UIViewController, SetProperties {
             } else {
                 destinationVC.onTable = "h"
             }
+            
+            destinationVC.labStart = newRecord.startTimestamp
+            destinationVC.labPolpat = "\(newRecord.microphoneType)"
+            destinationVC.labEnd = newRecord.endTimestamp
+            destinationVC.labMicloc = "\(newRecord.microphoneLocation)"
             
         }
     }
@@ -591,15 +601,12 @@ class ViewController: UIViewController, SetProperties {
         displayAlert(title: "File deleted", message: "\(newRecord.filename).caf has been removed")
         labelFilename.text = ""
         
-//        let fileUrlToDelete = getDirectory().appendingPathComponent("\(newRecord.filename).caf")
-//        do {
-//            try fileManager.removeItem(at: fileUrlToDelete)
-//            displayAlert(title: "File deleted", message: "\(newRecord.filename).caf has been removed")
-//            labelFilename.text = ""
-//        }
-//        catch let error as NSError {
-//            print("Ooops! Something went wrong: \(error)")
-//        }
+        //Reset the record
+        var tmp = newRecord
+        newRecord = Recording()
+        newRecord.microphoneLocation = tmp.microphoneLocation
+        newRecord.microphoneType = tmp.microphoneType
+        
     }
     
     

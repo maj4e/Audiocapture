@@ -22,7 +22,7 @@ class Recording {
     
     // Attributes from the user questionnaire
     var distance: String = ""
-    var filename = "untitled"
+    var filename = ""
     var onTable: Bool = false // if required we will make it programmatic
     var metadata = ""
     var roomType = ""

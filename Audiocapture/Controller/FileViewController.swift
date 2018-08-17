@@ -22,6 +22,11 @@ class FileViewController: UIViewController {
     var distance: String?
     var onTable: String?
     
+    var labMicloc: String?
+    var labPolpat: String?
+    var labStart: String?
+    var labEnd: String?
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +34,11 @@ class FileViewController: UIViewController {
         textFilename.text = filename
         textDistance.text = distance
         textTable.text = onTable
+        labelMicloc.text = labMicloc
+        labelEndtime.text = labEnd
+        labelStarttime.text = labStart
+        labelPolarpattern.text = labPolpat
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -57,6 +67,9 @@ class FileViewController: UIViewController {
     @IBOutlet weak var textDistance: UITextField!
     @IBOutlet weak var textTable: UITextField!
     
+    @IBOutlet weak var labelMicloc: UILabel!
+    @IBOutlet weak var labelPolarpattern: UILabel!
+    @IBOutlet weak var labelStarttime: UILabel!
+    @IBOutlet weak var labelEndtime: UILabel!
     
-
 }
