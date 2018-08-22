@@ -40,6 +40,34 @@ class FileViewController: UIViewController {
         labelPolarpattern.text = labPolpat
         labelOntable.text = labOntable
         
+        if labelStarttime.text != "" {
+
+            let mytime = labelStarttime.text as! String
+            let mytimeend = labelEndtime.text as! String
+            
+            // date
+            var startid = mytime.index((mytime.startIndex), offsetBy:2)
+            var endid = mytime.index((mytime.startIndex), offsetBy:10)
+            var substring1 = mytime[startid..<endid]
+            let date = String(substring1)
+            
+            // time start
+            startid = mytime.index((mytime.startIndex), offsetBy:11)
+            endid = mytime.index((mytime.startIndex), offsetBy:19)
+            substring1 = mytime[startid..<endid]
+            let time = String(substring1)
+            
+            // time end
+            startid = mytimeend.index((mytime.startIndex), offsetBy:11)
+            endid = mytime.index((mytime.startIndex), offsetBy:19)
+            substring1 = mytime[startid..<endid]
+            let timeend = String(substring1)
+        
+            
+            labelStarttime.text = time + " " + date
+            labelEndtime.text = timeend + " " + date
+        }
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -51,7 +79,7 @@ class FileViewController: UIViewController {
         
         let filename = textFilename.text!
         let distance = textDistance.text!
-        //let table = textTable.text!
+        
         
         // If the delegate is set, call the methods that will set the variables in the main ViewController
         delegate?.userChangedProperties(filename: filename, distance: distance)
@@ -66,10 +94,17 @@ class FileViewController: UIViewController {
     
     @IBOutlet weak var textFilename: UITextField!
     @IBOutlet weak var textDistance: UITextField!
+    
+    
     @IBOutlet weak var labelMicloc: UILabel!
     @IBOutlet weak var labelPolarpattern: UILabel!
+    @IBOutlet weak var labelOntable: UILabel!
     @IBOutlet weak var labelStarttime: UILabel!
     @IBOutlet weak var labelEndtime: UILabel!
-    @IBOutlet weak var labelOntable: UILabel!
+    //@IBOutlet weak var labelMicloc: UILabel!
+    //@IBOutlet weak var labelPolarpattern: UILabel!
+    //@IBOutlet weak var labelStarttime: UILabel!
+    //@IBOutlet weak var labelOntable: UILabel!
+    //@IBOutlet weak var labelEndtime: UILabel!
     
 }
