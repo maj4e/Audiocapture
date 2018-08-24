@@ -62,12 +62,19 @@ class ViewController: UIViewController, SetProperties {
         
         // Disable buttons that require a recording
         obuttonStartStop.isEnabled = false
-        obuttonStartStop.isHighlighted = true
+        //obuttonStartStop.isHighlighted = true
         
-        obuttonListen.isUserInteractionEnabled = false
-        obuttonEdit.isUserInteractionEnabled = false
-        obuttonUpload.isUserInteractionEnabled = true
-        obuttonDelete.isUserInteractionEnabled = false
+        obuttonListen.isEnabled = false
+        obuttonEdit.isEnabled = false
+        
+        obuttonUpload.isEnabled = false
+        obuttonDelete.isEnabled = false
+        
+        obuttonStartStop.setTitleColor(UIColor.gray, for: .disabled)
+        obuttonListen.setTitleColor(UIColor.gray, for: .disabled)
+        obuttonEdit.setTitleColor(UIColor.gray, for: .disabled)
+        obuttonUpload.setTitleColor(UIColor.gray, for: .disabled)
+        obuttonDelete.setTitleColor(UIColor.gray, for: .disabled)
         
     }
 
@@ -286,24 +293,20 @@ class ViewController: UIViewController, SetProperties {
     func userChangedProperties(filename: String, distance: String) {
         
         // Update the attributes of the current Record object
-        newRecord.distance = distance
-        newRecord.filename = filename
+        if distance != "" {
+            newRecord.distance = distance
+        } else {
+            newRecord.distance = "0"
+        }
+        
+        if filename != "" {
+            newRecord.filename = filename
+        } else {
+            newRecord.filename = "untitled"
+        }
         
         // Update the label of the filename in the ViewController
-        labelFilename.text = "file: \(filename).caf"
-        
-        // Configure the new file for recording
-//        fileUrl = getDirectory().appendingPathComponent("\(newRecord.filename).caf")
-//        do {
-//            try outputFile = AVAudioFile(forWriting: fileUrl, settings: audioEngine.inputNode.outputFormat(forBus: 0).settings)
-//            print("Audio file succesfully created")
-//
-//        } catch {
-//            print("Failed to create file for writing")
-//        }
-
-        
-        
+        labelFilename.text = "file: \(newRecord.filename).caf"
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -514,7 +517,7 @@ class ViewController: UIViewController, SetProperties {
         flag_setupReady = true
         
         obuttonStartStop.isEnabled = true
-        obuttonStartStop.isHighlighted = false
+        //obuttonStartStop.isHighlighted = false
         
         //Actually, all the data should be filled in into this other screen
         performSegue(withIdentifier: "goToQuestionnaire", sender: self)
@@ -578,10 +581,10 @@ class ViewController: UIViewController, SetProperties {
             flag_isRecording = false
             obuttonStartStop.setTitle("RECORD", for: .normal)
             obuttonStartStop.setTitleColor(UIColor.white, for: .normal)
-            obuttonListen.isUserInteractionEnabled = true
-            obuttonEdit.isUserInteractionEnabled = true
-            obuttonUpload.isUserInteractionEnabled = true
-            obuttonDelete.isUserInteractionEnabled = true
+            obuttonListen.isEnabled = true
+            obuttonEdit.isEnabled = true
+            obuttonUpload.isEnabled = true
+            obuttonDelete.isEnabled = true
             
             // Was the recording on the table or not
             if self.tcount > self.hcount {
@@ -658,6 +661,14 @@ class ViewController: UIViewController, SetProperties {
         newRecord = Recording()
         newRecord.microphoneLocation = tmp.microphoneLocation
         newRecord.microphoneType = tmp.microphoneType
+        
+        //Disable all buttons except the record again
+        obuttonEdit.isEnabled = false
+        obuttonListen.isEnabled = false
+        obuttonStartStop.isEnabled = false
+        obuttonUpload.isEnabled = false
+        obuttonDelete.isEnabled = false
+        
         
     }
     
