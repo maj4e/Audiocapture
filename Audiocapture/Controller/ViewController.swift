@@ -87,6 +87,9 @@ class ViewController: UIViewController, SetProperties {
         // Dispose of any resources that can be recreated.
     }
     
+    
+    
+    
 
     
     //* MARK: Functions related to the AVAudioSession configuration
@@ -488,6 +491,39 @@ class ViewController: UIViewController, SetProperties {
         present(alert, animated:true, completion: nil)
     }
     
+    func displayAlertWithAction(title:String, message:String) {
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction( title: "delete", style: .default, handler: { (action) in
+            
+            alert.dismiss(animated:true, completion: nil)
+            self.deleteFile(filename: "\(self.newRecord.filename).caf")
+            self.labelFilename.text = ""
+            
+            //Reset the record
+            let tmp = self.newRecord
+            self.newRecord = Recording()
+            self.newRecord.microphoneLocation = tmp.microphoneLocation
+            self.newRecord.microphoneType = tmp.microphoneType
+            
+            //Disable all buttons except the record again
+            self.obuttonEdit.isEnabled = false
+            self.obuttonListen.isEnabled = false
+            self.obuttonStartStop.isEnabled = false
+            self.obuttonUpload.isEnabled = false
+            self.obuttonDelete.isEnabled = false
+        }))
+        
+        alert.addAction(UIAlertAction( title: "cancel", style: .default, handler: { (action) in
+            
+            alert.dismiss(animated:true, completion: nil)
+            
+        }))
+        
+        present(alert, animated:true, completion: nil)
+    }
+    
 
     // Get directory
     func getDirectory() -> URL {
@@ -662,9 +698,6 @@ class ViewController: UIViewController, SetProperties {
             
     
     
-    
-    
-    
     @IBAction func buttonListen(_ sender: UIButton) {
         
         let fileUrlToPlay = getDirectory().appendingPathComponent("\(newRecord.filename).caf")
@@ -685,22 +718,26 @@ class ViewController: UIViewController, SetProperties {
     
     @IBAction func buttonDelete(_ sender: UIButton) {
         
-        deleteFile(filename: "\(newRecord.filename).caf")
-        displayAlert(title: "File deleted", message: "\(newRecord.filename).caf has been removed")
-        labelFilename.text = ""
+        //deleteFile(filename: "\(newRecord.filename).caf")
         
-        //Reset the record
-        let tmp = newRecord
-        newRecord = Recording()
-        newRecord.microphoneLocation = tmp.microphoneLocation
-        newRecord.microphoneType = tmp.microphoneType
+        //displayAlert(title: "File deleted", message: "\(newRecord.filename).caf has been removed")
+        displayAlertWithAction(title: "Delete last recording?", message: "This will remove \(newRecord.filename).caf from your device. Are you sure?")
         
-        //Disable all buttons except the record again
-        obuttonEdit.isEnabled = false
-        obuttonListen.isEnabled = false
-        obuttonStartStop.isEnabled = false
-        obuttonUpload.isEnabled = false
-        obuttonDelete.isEnabled = false
+//        deleteFile(filename: "\(newRecord.filename).caf")
+//        labelFilename.text = ""
+//
+//        //Reset the record
+//        let tmp = newRecord
+//        newRecord = Recording()
+//        newRecord.microphoneLocation = tmp.microphoneLocation
+//        newRecord.microphoneType = tmp.microphoneType
+//
+//        //Disable all buttons except the record again
+//        obuttonEdit.isEnabled = false
+//        obuttonListen.isEnabled = false
+//        obuttonStartStop.isEnabled = false
+//        obuttonUpload.isEnabled = false
+//        obuttonDelete.isEnabled = false
         
         
     }
