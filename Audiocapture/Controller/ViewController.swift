@@ -48,6 +48,10 @@ class ViewController: UIViewController, SetProperties {
     var uploadData = Upload()
     
     
+    // Some other globals needed for smooth operation
+    var oldFilename: String = ""
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -298,8 +302,11 @@ class ViewController: UIViewController, SetProperties {
         } else {
             newRecord.distance = "0"
         }
-        
+
         if filename != "" {
+            if filename != oldFilename && oldFilename != "" {
+                renameFile(oldname: "\(oldFilename).caf", newname: "\(filename).caf")
+            }
             newRecord.filename = filename
         } else {
             newRecord.filename = "untitled"
@@ -489,6 +496,17 @@ class ViewController: UIViewController, SetProperties {
         return documentDirectory
     }
     
+    // Check if a file exists in a directory
+    func doesFileExist(filename: String) -> Bool {
+        let fileUrlToCheck = getDirectory().appendingPathComponent(filename)
+        let filePath = fileUrlToCheck.path
+        if fileManager.fileExists(atPath: filePath){
+            return true
+        } else {
+            return false
+        }
+    }
+    
     
     // Delete a file from a directory
     func deleteFile(filename: String) {
@@ -499,11 +517,22 @@ class ViewController: UIViewController, SetProperties {
         catch let error as NSError {
             print("Ooops! Something went wrong: \(error)")
         }
+    }
+    
+    // Rename a file in a directory
+    func renameFile(oldname: String, newname: String){
+        
+        let fileUrlToRename = getDirectory().appendingPathComponent(oldname)
+        let fileUrlNew = getDirectory().appendingPathComponent(newname)
+        do {
+            try fileManager.moveItem(at: fileUrlToRename, to: fileUrlNew)
+        }
+        catch let error as NSError {
+            print("Error: file could not be renamed. \(error)")
+        }
         
     }
     
-    
-
     //* MARK: IBActions and IBOutlets
     //-------------------------------
     @IBAction func buttonSetupNewRec(_ sender: UIButton) {
@@ -537,10 +566,14 @@ class ViewController: UIViewController, SetProperties {
                 }
             }
             
- 
             // Configure the new file for recording and delete if there is an existing one
             
             fileUrl = getDirectory().appendingPathComponent("\(newRecord.filename).caf")
+            
+            if doesFileExist(filename: "\(newRecord.filename).caf") {
+                print("Exists file with such a filename")
+                deleteFile(filename: "\(newRecord.filename).caf")
+            }
             do {
                 try outputFile = AVAudioFile(forWriting: fileUrl, settings: audioEngine.inputNode.outputFormat(forBus: 0).settings)
                 print("Audio file succesfully created")
@@ -675,7 +708,8 @@ class ViewController: UIViewController, SetProperties {
     
     @IBAction func buttonMetadata(_ sender: UIButton) {
         
-        print(newRecord.filename)
+        // Store the current filename before any user input
+        oldFilename = newRecord.filename
         performSegue(withIdentifier: "editMetadata", sender: self)
         
     }

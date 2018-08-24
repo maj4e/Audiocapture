@@ -59,8 +59,8 @@ class FileViewController: UIViewController {
             
             // time end
             startid = mytimeend.index((mytime.startIndex), offsetBy:11)
-            endid = mytime.index((mytime.startIndex), offsetBy:19)
-            substring1 = mytime[startid..<endid]
+            endid = mytimeend.index((mytime.startIndex), offsetBy:19)
+            substring1 = mytimeend[startid..<endid]
             let timeend = String(substring1)
         
             
