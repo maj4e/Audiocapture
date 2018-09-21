@@ -103,9 +103,10 @@ class ViewController: UIViewController, SetProperties {
             }
         }
         
-        // Setup base configuration (mode and category)
+        // Setup base configuration (mode and category, sample rate)
         do {
             try audioSession.setCategory(AVAudioSessionCategoryPlayAndRecord, with: AVAudioSessionCategoryOptions.defaultToSpeaker)
+            try audioSession.setPreferredSampleRate(44100.0)
         } catch {
             displayAlert(title: "Error", message: "Failed to set AVAudioSession category to play and record")
         }
@@ -421,26 +422,67 @@ class ViewController: UIViewController, SetProperties {
     
     //*MARK - BLOB UPLOAD NOT WORKING
     func uploadBlob(data: Upload) {
-        let rooturi = data.rooturi
-        let container = data.container
-        let sas = data.sastoken
-        let containerURL = rooturi + "/" + container+"?" + sas
-        var blobcontainer : AZSCloudBlobContainer
-        var error : NSError?
         
-        blobcontainer = AZSCloudBlobContainer(url: URL(string: containerURL)! , error: &error)
+        let constring  = "DefaultEndpointsProtocol=https;AccountName=maj4e;AccountKey=0MYu4K9LQWy86G6C1q4Yl3/ixP8DH5uLQKTKuknQhQRjJtOHvv9FCTKgqvUBZhhDff3h/wjq3VuHtOeV5bLKtg==;EndpointSuffix=core.windows.net"
+        let containerName = "recordings"
         
-        if ((error) != nil) {
-            print("Error in creating blob container object.  Error code = %ld, error domain = %@, error userinfo = %@", error!.code, error!.domain, error!.userInfo);
-        } else {
+
+        do {
             
+            let account = try AZSCloudStorageAccount(fromConnectionString: constring)
+            let blobClient: AZSCloudBlobClient = account.getBlobClient()
+            let blobContainer: AZSCloudBlobContainer = blobClient.containerReference(fromName: containerName)
+            blobContainer.createContainerIfNotExists(with: .container, requestOptions: nil, operationContext: nil) { (NSError, Bool) -> Void in
+                if ((NSError) != nil){
+                    NSLog("Error in creating container.")
+                }
+                else {
+                    
+                    // Upload the .caf file
+                    var blob: AZSCloudBlockBlob =  blobContainer.blockBlobReference(fromName: "\(self.newRecord.filename).caf")
+                    var currentfileurl = self.getDirectory().appendingPathComponent("\(self.newRecord.filename).caf")
+                    blob.uploadFromFile(with: currentfileurl, completionHandler: {(NSError) -> Void in
+                       NSLog("Ok, .caf uploaded !")
+                    })
+                    
+                    // Upload the .mp4 file
+                    //blob = blobContainer.blockBlobReference(fromName: "\(self.newRecord.filename).mp4")
+                     //currentfileurl = self.getDirectory().appendingPathComponent("\(self.newRecord.filename).mp4")
+                    //blob.uploadFromFile(with: currentfileurl, completionHandler: {(NSError) -> Void in
+                     //   NSLog("Ok, .mp4 uploaded !")
+                    //})
+
+                }
+            }
+            } catch {
+                
+            print(error)
+            }
+
+
+        
+        //-----
+        
+//        let rooturi = data.rooturi
+//        let container = data.container
+//        let sas = data.sastoken
+//        let containerURL = rooturi + "/" + container+"?" + sas
+//        var blobcontainer : AZSCloudBlobContainer
+//        var error : NSError?
+//
+//        blobcontainer = AZSCloudBlobContainer(url: URL(string: containerURL)! , error: &error)
+//
+//        if ((error) != nil) {
+//            print("Error in creating blob container object.  Error code = %ld, error domain = %@, error userinfo = %@", error!.code, error!.domain, error!.userInfo);
+//        } else {
+        
 //                  let blob = blobcontainer.blockBlobReference(fromName: "\(uploadData.filename)/\(newRecord.filename).caf")
 //                  let currentfileurl = getDirectory().appendingPathComponent("\(newRecord.filename).caf")
 //                  blob.uploadFromFile(with: currentfileurl, completionHandler: {(NSError) -> Void in
 //                  NSLog("Ok, uploaded !")
 //                  })
 //            
-                }
+//                }
     }
     
     
@@ -696,8 +738,6 @@ class ViewController: UIViewController, SetProperties {
         
     }
             
-    
-    
     @IBAction func buttonListen(_ sender: UIButton) {
         
         let fileUrlToPlay = getDirectory().appendingPathComponent("\(newRecord.filename).caf")
@@ -715,31 +755,9 @@ class ViewController: UIViewController, SetProperties {
     }
     
     
-    
     @IBAction func buttonDelete(_ sender: UIButton) {
         
-        //deleteFile(filename: "\(newRecord.filename).caf")
-        
-        //displayAlert(title: "File deleted", message: "\(newRecord.filename).caf has been removed")
         displayAlertWithAction(title: "Delete last recording?", message: "This will remove \(newRecord.filename).caf from your device. Are you sure?")
-        
-//        deleteFile(filename: "\(newRecord.filename).caf")
-//        labelFilename.text = ""
-//
-//        //Reset the record
-//        let tmp = newRecord
-//        newRecord = Recording()
-//        newRecord.microphoneLocation = tmp.microphoneLocation
-//        newRecord.microphoneType = tmp.microphoneType
-//
-//        //Disable all buttons except the record again
-//        obuttonEdit.isEnabled = false
-//        obuttonListen.isEnabled = false
-//        obuttonStartStop.isEnabled = false
-//        obuttonUpload.isEnabled = false
-//        obuttonDelete.isEnabled = false
-        
-        
     }
     
     
@@ -755,7 +773,7 @@ class ViewController: UIViewController, SetProperties {
     @IBAction func buttonUpload(_ sender: UIButton) {
         getUploadInfo(stringurl: url_getInfo)
         uploadBlob(data: uploadData)
-        uploadMetadata(stringurl: url_uploadInfo)
+        //uploadMetadata(stringurl: url_uploadInfo)
     }
     
     

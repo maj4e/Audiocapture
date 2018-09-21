@@ -69,6 +69,33 @@ class Recording {
         audioEngine.inputNode.removeTap(onBus: 0)
         audioEngine.stop()
         
+//        //Convert the audio file from .caf to mp4
+//        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+//
+//        let outputUrl = paths[0].appendingPathComponent("\(self.filename).mp4")
+//        let assetUrl = paths[0].appendingPathComponent("\(self.filename).caf")
+//        
+//        let asset = AVAsset.init(url: assetUrl)
+//        let exportSession = AVAssetExportSession.init(asset: asset, presetName: AVAssetExportPresetHighestQuality)
+//
+//        exportSession?.outputFileType = AVFileType.mp4
+//        exportSession?.outputURL = outputUrl
+//        exportSession?.metadata = asset.metadata
+//        exportSession?.exportAsynchronously(completionHandler: {
+//            if (exportSession?.status == .completed)
+//            {
+//                print("AV export succeeded.")
+//            }
+//            else if (exportSession?.status == .cancelled)
+//            {
+//                print("AV export cancelled.")
+//            }
+//            else
+//            {
+//                print ("Error is \(String(describing: exportSession?.error))")
+//
+//            }
+//        })
     }
         
     
